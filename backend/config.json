@@ -1,0 +1,5 @@
+{
+  "baseURL": "http://10.25.163.9:3001/",
+	"port": 3001,
+  "db": "mongodb://controle:controle@127.0.0.1:27017/controle"
+}

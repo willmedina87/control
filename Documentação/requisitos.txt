@@ -1,0 +1,375 @@
+Gerais:
+
+- Gerar metadados para o BDGEx
+- Gerar RTM para envio a DSG
+- Gerar mapas de produção
+- Distribuição de tarefas
+- Controle de backup de arquivos e banco de dados
+- Predizer a produção, melhorar os parâmetros de produção, identificar gargalos
+- Associação de insumos e tabelas do FME
+
+
+--------------------------------------------------------------------------------
+Verifica por usuário o que ele está fazendo
+Verifica usuários sem tarefa
+Verifca filas de cada usuário.
+
+Seleciona usuários sem tarefa em execução por função e seção.
+Seleciona tarefas em execução informando atividade atual e o usuário. Agrupado por função e seção
+
+
+Como lidar com revisão e correção e paralelo.
+
+-------------------------------------------------------------------------------
+Telas:
+
+Operador:
+Atividades
+Relatorio Individual
+
+Gerente de Fluxo:
+Atividades
+Relatório Individual
+Gerenciamento de Fluxo
+
+Chefe de Seção:
+Atividades
+Gerenciamento de Fluxo
+Gerenciamento de Pessoal
+Relatório Geral
+
+Visualizador:
+Relatório Geral
+
+Admnistrador:
+Projetos
+sdt: Fases Subfases Funções Seções
+Usuários
+
+
+
+Perfil, MI, PostGrad é administrado direto do banco
+
+
+--------------------------------------------------------------------------------
+Tela de login: Verifica usuário e senha
+
+Para Operador:
+Inicia-se na tela de atividades. Caso já exista uma ou mais tarefas que se iniciaram
+elas são mostradas nessa tela. O operador pode iniciar novamente uma dessas atividades.
+Também o operador pode iniciar uma outra atividade (atividades diversas ou a próxima na fila).
+
+
+Se não existir atividades iniciadas irá aparecer a próxima na fila destinada a aquele operador.
+(existe o conceito de fila por operador). O operador pode iniciar aquela atividade ou iniciar a
+próxima da fila ou atividades diversas.
+
+Sempre que se iniciar uma atividade se deve perguntar se é expediente integral ou turno. (ou serviço ou saindo de serviço)
+Tambem tem o caso de serviço, que o comandante da guarda não vai para SDT naquele dia (ou o soldado).
+O serviço é o um expediente diferenciado em relação ao expediente integral e turno também.
+
+
+Caso tenha uma atividade em execução somente ela será mostrada. E terá opção de finalizar ou de pausar.
+
+Quando se pausar uma tarefa imediamente deve-se iniciar uma outra (a não ser que o motivdo de
+pausa seja término do expediente). Intervalo, almoço serão contados como atividades. E também
+todas as tarefas administrativas e tarefas técnicas como tabela do FME.
+
+
+Relatório Individual pode ser detalhada ou sumarizada. No detalhada cada atividade iniciada pelo operador
+será discriminada.
+No relatório sumarizado será agregado as informações de atividades concluídas.
+
+
+Para Gerente de Fluxo:
+
+Atividades e Relatório individual é da mesma forma que o operador.
+
+
+Gerenciamento de Fluxo permite gerenciar as atividades que estão em uma fase relacionada com a seção
+que o Gerente de Fluxo está associado. A visão é divida em tres:
+- Atividades em Aberto: Atividades iniciadas por operadores daquela seção, deverá mostrar qual o MI e qual operador.
+- Atividades distribuidas: Atividades que já foram associado a fila de um operador. Deve ter diversos filtros
+para poder ver por operador e por subfase. Poderá se modificar a prioridade das cartas, e associar mais usuários a
+atividade
+- Atividades a distribuir: Atividades que de acordo com o ordenamento já estão nessa seção. Pode se associar usuários
+e ele irá para a fila de distribuídos.
+
+Deve se existir a opção de pular e voltar fases. Bem como redistribuir tarefas em aberto (em caso de férias etc)
+
+
+Gerenciamento de Pessoal:
+Atribuir funções ao usuário de sua seção
+
+--------------------------------------------------------------------------------
+/data/usuarios
+/data/funcoes
+/data/secoes
+/data/projetos
+/data/subprojetos
+/data/fases
+/data/subfases
+/data/tarefas
+/data/atividades
+/data/atividadesespeciais
+/data/tipoatividadeespecial
+
+---Todas atividades em aberto ligadas ao usuario ordenada pela prioridade
+---/data/atividades?funcao=_funcao1,_funcao2,...&status=Não Iniciada&usuario_fila=_id&orderby=+prioridade&count=1&offset=0  // já retorna ordenado pela prioridade
+---segunda
+---/data/atividades?funcao=_funcao1,_funcao2,...&status=Não Iniciada&usuario_fila=_id&orderby=+prioridade&count=1&offset=1  // já retorna ordenado pela prioridade
+
+
+---Todas as atividades em execucao pelo usuário (somente uma) - pode ser atividade ou atividade especial
+---/data/atividades?usuario=_id&status=Em Execução
+
+---Todas as atividades em pausa pelo usuário - pode ser atividade ou atividade especial
+---/data/atividades?usuario=_id&status=Pausado
+
+Inicia atividade - Patch /data/atividades ou atividadesespeciais
+Pausa atividade - Patch + Insert (insere nova Atividade Iniciada no caso de ativdade). Só patch no caso de atividade especial
+Finaliza atividade - Patch /data/atividades ou atividadesespeciais
+
+---Cria Atividade Especial - POST /data/atividadesespeciais
+
+---Todas as atividades pausadas e finalizadas de um usuário.
+---/data/atividades?usuario=_id&status=Pausado,Finalizado
+
+---Sumariza todas as atividades de um usuário (função, não no REST)
+
+---Todas as atividades em execução de uma seção.
+---/data/atividades?status=Em Execução&secao=??
+---Todas as atividades distribuidas de uma seção.
+---/data/atividades?secao=??&distribuida=1
+
+---Todas as atividades em uma subfase cuja funçõa associada é naquela seção.
+---/data/atividades?secao=??&distribuida=0
+
+
+---Novo projeto
+---POST /data/projetos
+---POST /data/subprojetos
+---POST /data/tarefas
+---POST /data/atividades (primeira do ordenamento)
+
+
+
+---Todos os usuários daquela seção.
+---/data/usuarios?secao=??
+
+---Update no usuário para atributir nova função. (patch)
+
+
+Todas as atividades pausadas e finalizadas de uma seção.
+Sumariza todas as atividades de uma seção (função, não REST)
+Agrupa por função, por usuário
+Sumário de uma subfase, pesquisa entre datas, tempo médio
+Informação necessária para mapa de produção
+Estimativa de produção
+Ver informação de produção por operador
+
+
+Ao criar projeto:
+- Verifica se já tem um nome cadastrado no banco
+- Ao adicionar MI verifica se ele já foi adicionada no projeto. Deve ser capaz de modificar o projeto para adicionar mais MIs.
+
+
+
+--------------------------------------------------------------------------------
+Fluxo RAM:
+
+Fase Aquisição - Seção Imagem - Subfases:
+Preparo - Preparador - Paralelo
+Aquisição - Aquisitor
+Revisão 1 - Revisor 1 / Revisor 2
+Revisão 2 - Revisor 1 / Revisor 2
+Revisão 3 / Ligação  - Revisor 2
+Vegetação - Preparador
+
+Fase Validação - Seção Validação e Edição - Subfases:
+Carga no BD - Preparador Val - Paralelo
+Validação - Validador 1 / Validador 2 / Validador 3
+Revisão - Validador 3
+
+Fase Edição - Seção Validação e Edição - Subfases:
+Preparo - Editor 1 / Editor 2 / Editor 3
+Revisão 1 - Revisor 1 / Revisor 2 / Revisor 3
+Correção 1 - Editor 1 / Editor 2 / Editor 3
+Revisão 2 - Revisor 2 / Revisor 3
+Correção 2 - Editor 1 / Editor 2 / Editor 3
+Revisão 3 - Revisor 2 / Revisor 3
+Correção 3 - Editor 1 / Editor 2 / Editor 3
+Conferência - Revisor 3
+
+Fase BDGEx - Seção Validação e Edição - Subfases:
+Carga Matricial - Cadastrador - Paralelo
+Carga Vetorial - Cadastrador - Paralelo
+
+--------------------------------------------------------------------------------
+JSON
+
+As camadas tem o _id padrão do mongodb
+
+Usuários:
+{
+  nome: String,
+  nomeGuerra: String
+  login: String,
+  senha: String,
+  postGrad: String,   //lista
+  turno: String,   //lista
+  secao: Integer, //fk
+  perfil: String   //lista
+  funcoes: [
+  {
+    funcao: Integer, //fk
+    dataInicio: ISOdate,
+    dataFim: ISOdate
+  },...
+  ] //fk
+}
+
+Possíveis valores para turno:
+Manhã
+Tarde
+Integral
+
+Possiveis valores para perfil:
+Operador
+Gerente de Fluxo
+Chefe de Seção
+Visualizador
+Administrador
+
+Possiveis valores PostGrad:
+Sd
+Cb
+3ºSgt
+2ºSgt
+1ºSgt
+ST
+Asp
+2ºTen
+1ºTen
+Cap
+Maj
+TC
+Cel
+Gen
+
+Funções:
+{
+  nome: String,
+  secao: Integer, //fk
+}
+
+Seções:
+{
+  nome: String,
+}
+
+Projetos:
+{
+  nome: String,
+}
+
+Subprojeto:
+{
+  nome: String,
+  projeto: Integer, //fk
+  subfases: [
+    {
+      subfase: Integer, //fk
+      ordem: Integer
+    }, ...
+  ],
+  tarefas: [Integer] //fk
+}
+
+Fases:
+{
+  nome: String
+}
+
+Subfases:
+{
+  nome: String,
+  fase: Integer //fk,
+  funcoes: [Integer] //fk
+  paralelo: Boolean
+}
+
+Tarefas:
+{
+  mi: String,
+  inom: String,
+  escala: Integer,
+  asc: String //lista
+  subfaseCorrente: Integer, //fk
+  concluido: Boolean,
+  nomeFolha: String,
+  palavrasChave: [String],
+  datasetIndividual: String,
+  datasetContinuo: String,
+  geom: Polygon
+}
+
+Valores possiveis para asc:
+1DL
+CIGEX
+3DL
+4DL
+5DL
+
+Atividades:
+{
+  operador: Integer //fk
+  dataInicio: ISO DATE
+  dataFim: ISO DATE
+  horasTrabalhadas: TIME
+  tarefa: Integer //fk
+  subfase: Integer //fk
+  status: String //lista
+  regime: String //lista
+  observacao: String
+  motivoPausa: Integer //fk tipoAtividadeEspecial
+  fila: [
+  {
+    operador: Integer //fk
+    prioridade: Integer
+  }, ...
+  ],
+  nomeBloco: String,
+  atividadesBloco: [Integer] //fk atividades
+}
+
+Valores possiveis para status:
+Em execução
+Pausa
+Finalizado
+Não iniciado
+
+Valores possíves para regime:
+Turno
+Integral
+Serviço
+
+Atividade_Especial:
+{
+  operador: Integer //fk
+  dataInicio: ISO DATE
+  dataFim: ISO DATE
+  horasTrabalhadas: TIME
+  tipoAtividadeEspecial: Integer //fk tipoAtividadeEspecial
+  status: String //lista
+  regime: String //lista
+  observacao: String
+  motivoPausa: Integer //fk tipoAtividadeEspecial
+  atividadeTecnica: Boolean
+}
+
+tipoAtividadeEspecial:
+{
+  nome: String,
+  descricao: String,
+}
